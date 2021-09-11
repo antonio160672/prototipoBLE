@@ -24,12 +24,12 @@ import BleManager from 'react-native-ble-manager';
 import Subtitle from '../subtitle';
 import Divice from '../Divice/divice';
 import Empty from '../Empty/empty';
-import MainFeedPost from "../models/index"
+import UserModel from "../models/index"
 import {
-    createTable,
-    adddata,
-    getdata
+    getdata, 
+    addDivice
 } from '../services/db-service';
+
 let arraF;
 const BleManagerModule = NativeModules.BleManager;
 const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
@@ -42,9 +42,10 @@ const peripherals = new Map();
     conecte poner rojo y mostrar mensaje de reintentar
     -arreglar el scroll de la lista
 */}
+
+
 function DispositivosBLE(props) {
-    
-    const [Post, setMainFeedPost]=useState(new MainFeedPost())
+    const [dive, setMaindive]=useState(new UserModel())
     const [isScanning, setIsScanning] = useState(false);
     const [peripherals, setPeripherals] = useState(new Map());
     const [peripheralInfo2, setPeripheralInfo] = useState(new Map());
@@ -61,14 +62,17 @@ function DispositivosBLE(props) {
     }
 
     const createtable = async () => {
-        //debugger
-        // createTable()   
-        // adddata()
-        // getdata()
+        getdata()
+    }
+    const adddivice = async () => {
+        if(dive.getMacaddres().length!=0){
+            debugger
+            console.log("holamuno")
+            addDivice(dive)
+        }        
     }
 
     useEffect(() => {
-
         
         createtable();
 
@@ -106,11 +110,9 @@ function DispositivosBLE(props) {
     }, []);
 
     useEffect(() => {
-        debugger
         let interval;
         if (realTime) {
             interval = setInterval(() => {
-                console.log(arraF, 'el ultimo')
                 insertInfo()
                 setArrayAcele([]);
                 arraF=[]
@@ -125,17 +127,15 @@ function DispositivosBLE(props) {
     }, [realTime]);
 
     useEffect(() => {
-        debugger
         if(arrayAcele.length!=0){
             arraF.push(arrayAcele)
         }
     }, [JSON.stringify(arrayAcele)]);
 
+
     const insertInfo = () => {
-        let data = arraF.toString()
+        debugger
         let data2=JSON.stringify(Object.assign({}, arraF))
-        console.log(data);
-        console.log("\n");
         console.log(data2);
     }
 
@@ -178,7 +178,10 @@ function DispositivosBLE(props) {
             peripheral.connected = false;
             peripherals.set(peripheral.id, peripheral);
             setList(Array.from(peripherals.values()));
-        }
+        }        
+        debugger
+        setMaindive("")
+        setMaindive(new UserModel())
         setRealTime(false)
         console.log('Disconnected from ' + data.peripheral);
     }
@@ -243,7 +246,6 @@ function DispositivosBLE(props) {
             if (peripheral.connected) {
                 let d = peripherals.get(peripheral.id);
                 if (d) {
-                    debugger
                     d.connected = "undefined";
                     setPeripherals(peripherals.set(peripheral.id, d))
                     setList(Array.from(peripherals.values()));
@@ -269,7 +271,11 @@ function DispositivosBLE(props) {
                             setTimeout(() => {
                                 BleManager.read(peripheral.id, service, bakeCharacteristic).then(
                                     (readData) => {
-                                        console.log(readData);
+                                        dive.setIdDispositivo(peripheral.id)
+                                        dive.setMacaddres(peripheral.id)
+                                        dive.setserviceuuids(service)
+                                        dive.setcaracteristica(bakeCharacteristic)
+                                        adddivice()
                                         const buffer = Buffer.from(readData);
                                         console.log(`valor del buffer ${buffer}`);
                                     }).catch((error) => {

@@ -5,35 +5,37 @@ import Form from '../Form/form';
 import Constantes from './constantes'
 import Toast from 'react-native-simple-toast';
 import DispositivosBLE from '../DispositivosBLE/DispositivosBLE'
-import MainFeedPost from "../models/index"
 import {
-    createTable,
-    adddata,
+    createTableExperimento,
+    createTableDivice,
+    createTableData,
+    adddataExperimento,
     getdata
 } from '../services/db-service';
 
 function BluetoothList(props) {
     const [expeName, setExperiment] = useState('')
-    const [errors, setExErrors] = useState(false)
-    const [Post, setMainFeedPost]=useState(new MainFeedPost())
+    const [errors, setExErrors] = useState(true)
 
     const createtable = async () => {
-        createTable()   
+        createTableExperimento()
+        createTableDivice()
+        createTableData()
+        adddataExperimento("Experimeto de camita")
     }
 
     useEffect(() => {
         createtable();
-    }, []);
-    
+    }, [errors]);
+
     const clickButton = () => {
-        getdata()
-        // console.log(expeName)
-        // if (expeName.length > 0) {
-        //     Toast.show('Experimento guardado');
-        //     setExErrors(false)
-        // } else {
-        //     Toast.show('Favor de ingresar el nombre el experimeto', Toast.LONG);
-        // }
+        console.log(expeName)
+        if (expeName.length > 0) {
+            Toast.show('Experimento guardado');
+            setExErrors(false)
+        } else {
+            Toast.show('Favor de ingresar el nombre el experimeto', Toast.LONG);
+        }
     }
 
     return (

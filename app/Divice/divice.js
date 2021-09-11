@@ -9,7 +9,6 @@ import Separator from './separator'
 import styles from './componentesDivice'
 
 function Divice(props) {
-    debugger
     const color =
         props.connected ? 'green' :
             props.connected === "undefined" ? 'red' : '#fff';
