@@ -15,7 +15,7 @@ import {
 
 function BluetoothList(props) {
     const [expeName, setExperiment] = useState('')
-    const [errors, setExErrors] = useState(true)
+    const [errors, setExErrors] = useState(false)
 
     const createtable = async () => {
         createTableExperimento()

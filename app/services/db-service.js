@@ -94,7 +94,7 @@ export const adddataExperimento = async (Expe_name) => {
 };
 
 export const addDivice = async (Divice) => {
-  debugger
+  //debugger
   let indice
   getindice(value => {
     console.log(value)

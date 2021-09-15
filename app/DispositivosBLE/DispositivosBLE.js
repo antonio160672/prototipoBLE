@@ -26,11 +26,13 @@ import Divice from '../Divice/divice';
 import Empty from '../Empty/empty';
 import UserModel from "../models/index"
 import {
-    getdata, 
+    getdata,
     addDivice
 } from '../services/db-service';
 
+let _ = require('underscore')
 let arraF;
+let deviceObje = new Object();
 const BleManagerModule = NativeModules.BleManager;
 const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
 const peripherals = new Map();
@@ -45,7 +47,7 @@ const peripherals = new Map();
 
 
 function DispositivosBLE(props) {
-    const [dive, setMaindive]=useState(new UserModel())
+    const [dive, setMaindive] = useState(new UserModel())
     const [isScanning, setIsScanning] = useState(false);
     const [peripherals, setPeripherals] = useState(new Map());
     const [peripheralInfo2, setPeripheralInfo] = useState(new Map());
@@ -61,23 +63,22 @@ function DispositivosBLE(props) {
         />
     }
 
-    const createtable = async () => {
+    const createtable = () => {
         getdata()
     }
     const adddivice = async () => {
-        if(dive.getMacaddres().length!=0){
-            debugger
-            console.log("holamuno")
+        if (dive.getMacaddres().length != 0) {
             addDivice(dive)
-        }        
+        }
     }
 
     useEffect(() => {
-        
+
         createtable();
+        //debugger
+        console.log(deviceObje)
 
         BleManager.start({ showAlert: false });
-        console.log("primero en ejecutar")
 
         bleManagerEmitter.addListener('BleManagerDiscoverPeripheral', handleDiscoverPeripheral);
         bleManagerEmitter.addListener('BleManagerStopScan', handleStopScan);
@@ -111,38 +112,43 @@ function DispositivosBLE(props) {
 
     useEffect(() => {
         let interval;
+        for (let prop in  deviceObje) {
+            deviceObje[prop]=[]
+        }
         if (realTime) {
             interval = setInterval(() => {
                 insertInfo()
-                setArrayAcele([]);
-                arraF=[]
+                for (let prop in  deviceObje) {
+                    //console.log("hola mundo desde la prop")
+                    deviceObje[prop]=[]
+                }
             }, 30000);
         } else {
             clearInterval(interval);
-            setArrayAcele([]);
+            //setArrayAcele([]);
             setList([])
-            arraF=[]
+            arraF = []
         }
         return () => clearInterval(interval);
     }, [realTime]);
 
-    useEffect(() => {
-        if(arrayAcele.length!=0){
-            arraF.push(arrayAcele)
-        }
-    }, [JSON.stringify(arrayAcele)]);
+    // useEffect(() => {
+    //     if (arrayAcele.length != 0) {
+    //         arraF.push(arrayAcele)
+    //     }
+    // }, [JSON.stringify(arrayAcele)]);
 
 
     const insertInfo = () => {
-        debugger
-        let data2=JSON.stringify(Object.assign({}, arraF))
+        //debugger
+        let data2 = JSON.stringify(Object.assign({}, arraF))
         console.log(data2);
     }
 
-    const startScan = () => {
+    const startScan = async () => {
         setList([])
         if (!isScanning) {
-            BleManager.scan([], 3, true).then((results) => {
+            await BleManager.scan([], 3, true).then((results) => {
                 console.log("primero en entrar")
                 console.log('Scanning...');
                 setIsScanning(true);
@@ -178,69 +184,43 @@ function DispositivosBLE(props) {
             peripheral.connected = false;
             peripherals.set(peripheral.id, peripheral);
             setList(Array.from(peripherals.values()));
-        }        
-        debugger
+        }
+        //debugger
         setMaindive("")
         setMaindive(new UserModel())
         setRealTime(false)
         console.log('Disconnected from ' + data.peripheral);
     }
 
-    const retrieveConnected = () => {
+    const retrieveConnected = async () => {
         console.log('2')
-        BleManager.getConnectedPeripherals([]).then((results) => {
+        await BleManager.getConnectedPeripherals([]).then((results) => {
             if (results.length == 0) {
                 console.log('No connected peripherals')
             }
-            for (var i = 0; i < results.length; i++) {
-                var peripheral = results[i];
-                peripheral.connected = true;
-                peripherals.set(peripheral.id, peripheral);
-                testPeripheral2(peripheral)
+            results.forEach((result) => {
+                //debugger
+                result.connected = true;
+                peripherals.set(result.id, result);
+                setRealTime(true)
                 setList(Array.from(peripherals.values()));
-            }
+            })
         }).catch((error) => {
             console.log('Connection error', error);
         });
     }
 
-    const handleUpdateValueForCharacteristic = async (data) => {
-        const buffer = Buffer.from(data.value);
+    const handleUpdateValueForCharacteristic = async ({ value, peripheral, characteristic, service }) => {
+        //debugger
+        const buffer = Buffer.from(value);
         var date = moment()
             .format('YYYY-MM-DD hh:mm:ss a');
 
-        const dataacelero = buffer.toString() + "," + date + ";";
-        setRealTime(true)
-        setArrayAcele(dataacelero)
-
+        const dataacelero = buffer.toString() + "," + date + peripheral+ ";";
+        deviceObje[peripheral].push(dataacelero)
     }
-
-    const testPeripheral2 = (peripheral) => {
-        console.log('5')
-        console.log(peripheral)
-        if (peripheral) {
-            console.log("hola mundo se conecto")
-            console.log(peripheral)
-            console.log('Connected to ' + peripheral.id);
-            setTimeout(() => {
-                let d = peripheralInfo2.get(peripheral.id);
-                console.log(d);
-                BleManager.retrieveServices(peripheral.id).then((peripheralInfo) => {
-                    var service = peripheralInfo.characteristics[3].service;
-                    var bakeCharacteristic = peripheralInfo.characteristics[3].characteristic;
-                    setTimeout(() => {
-                        BleManager.startNotification(peripheral.id, service, bakeCharacteristic).then(
-                            (readData) => {
-                            }).catch((error) => {
-                                console.log('Notification error', error);
-                            });
-                    }, 200);
-                });
-            }, 900);
-        }
-    }
-
-    const testPeripheral = (peripheral) => {
+    
+    const testPeripheral = async (peripheral) => {
         // console.log('3')
         if (peripheral) {
             if (peripheral.connected) {
@@ -250,40 +230,40 @@ function DispositivosBLE(props) {
                     setPeripherals(peripherals.set(peripheral.id, d))
                     setList(Array.from(peripherals.values()));
                 }
-                BleManager.disconnect(peripheral.id);
+                await BleManager.disconnect(peripheral.id);
             } else {
-                BleManager.connect(peripheral.id).then(() => {
+                await BleManager.connect(peripheral.id).then(() => {
                     let d = peripherals.get(peripheral.id);
                     if (d) {
                         d.connected = true;
                         setPeripherals(peripherals.set(peripheral.id, d))
                         setList(Array.from(peripherals.values()));
                     }
-                    console.log('Connected to ' + peripheral.id);
                     setTimeout(() => {
                         BleManager.retrieveServices(peripheral.id).then((peripheralInfo) => {
-                            console.log(peripheralInfo)
                             setPeripheralInfo(peripheralInfo2.set(peripheral.id, peripheralInfo))
-                            console.log(peripheralInfo.characteristics[3].characteristic);
-                            console.log(peripheralInfo.characteristics[3].service);
                             var service = peripheralInfo.characteristics[3].service;
                             var bakeCharacteristic = peripheralInfo.characteristics[3].characteristic;
+                            debugger
+                            if (!_.has(deviceObje, peripheral.id)) {
+                                deviceObje[peripheral.id] = []
+                            }
                             setTimeout(() => {
-                                BleManager.read(peripheral.id, service, bakeCharacteristic).then(
-                                    (readData) => {
+                                BleManager.startNotification(peripheral.id, service, bakeCharacteristic).then(
+                                    () => {
                                         dive.setIdDispositivo(peripheral.id)
                                         dive.setMacaddres(peripheral.id)
                                         dive.setserviceuuids(service)
                                         dive.setcaracteristica(bakeCharacteristic)
                                         adddivice()
-                                        const buffer = Buffer.from(readData);
-                                        console.log(`valor del buffer ${buffer}`);
+                                        console.log("como va el objeto ", deviceObje);
+                                        console.log('Connected to ' + peripheral.id);
                                     }).catch((error) => {
                                         console.log('Notification error', error);
                                     });
-                            }, 200);
+                            }, 1000);
                         });
-                    }, 900);
+                    }, 1500);
                 }).catch((error) => {
                     console.log('Connection error', error);
                 });
