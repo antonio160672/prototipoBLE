@@ -27,7 +27,8 @@ import Empty from '../Empty/empty';
 import UserModel from "../models/index"
 import {
     getdata,
-    addDivice
+    addDivice,
+    adddata
 } from '../services/db-service';
 
 let _ = require('underscore')
@@ -127,7 +128,6 @@ function DispositivosBLE(props) {
             clearInterval(interval);
             //setArrayAcele([]);
             setList([])
-            arraF = []
         }
         return () => clearInterval(interval);
     }, [realTime]);
@@ -141,8 +141,7 @@ function DispositivosBLE(props) {
 
     const insertInfo = () => {
         //debugger
-        let data2 = JSON.stringify(Object.assign({}, arraF))
-        console.log(data2);
+        adddata(deviceObje)
     }
 
     const startScan = async () => {
@@ -185,7 +184,6 @@ function DispositivosBLE(props) {
             peripherals.set(peripheral.id, peripheral);
             setList(Array.from(peripherals.values()));
         }
-        //debugger
         setMaindive("")
         setMaindive(new UserModel())
         setRealTime(false)
@@ -199,7 +197,6 @@ function DispositivosBLE(props) {
                 console.log('No connected peripherals')
             }
             results.forEach((result) => {
-                //debugger
                 result.connected = true;
                 peripherals.set(result.id, result);
                 setRealTime(true)
@@ -211,17 +208,16 @@ function DispositivosBLE(props) {
     }
 
     const handleUpdateValueForCharacteristic = async ({ value, peripheral, characteristic, service }) => {
-        //debugger
         const buffer = Buffer.from(value);
         var date = moment()
             .format('YYYY-MM-DD hh:mm:ss a');
 
-        const dataacelero = buffer.toString() + "," + date + peripheral+ ";";
+        const dataacelero = buffer.toString() + "," + date + "," +  peripheral+ ";";
+        //console.log(dataacelero)
         deviceObje[peripheral].push(dataacelero)
     }
     
     const testPeripheral = async (peripheral) => {
-        // console.log('3')
         if (peripheral) {
             if (peripheral.connected) {
                 let d = peripherals.get(peripheral.id);
@@ -244,7 +240,7 @@ function DispositivosBLE(props) {
                             setPeripheralInfo(peripheralInfo2.set(peripheral.id, peripheralInfo))
                             var service = peripheralInfo.characteristics[3].service;
                             var bakeCharacteristic = peripheralInfo.characteristics[3].characteristic;
-                            debugger
+                            //debugger
                             if (!_.has(deviceObje, peripheral.id)) {
                                 deviceObje[peripheral.id] = []
                             }

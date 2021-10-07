@@ -21,7 +21,7 @@ function BluetoothList(props) {
         createTableExperimento()
         createTableDivice()
         createTableData()
-        adddataExperimento("Experimeto de camita")
+        adddataExperimento("Experimento de camita")
     }
 
     useEffect(() => {

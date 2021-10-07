@@ -1,6 +1,8 @@
 import { enablePromise, openDatabase, SQLiteDatabase } from 'react-native-sqlite-storage';
 import { ToDoItem } from '../models';
 
+let indice;
+
 // enablePromise(true);
 var db = openDatabase({
   name: 'SchoolDatabase.db',
@@ -92,13 +94,34 @@ export const adddataExperimento = async (Expe_name) => {
     );
   });
 };
+export const adddata = async (data) => {
+  //debugger
+  let Divi_id;
+  for (const [key, aceleromedata] of Object.entries(data)) {
+    getIdDivice(value => {
+      Divi_id = value[0]
+    }, indice, key)
+    let aceleromedata = JSON.stringify(Object.assign({}, aceleromedata))
+    db.transaction(function (tx) {
+      console.log(Divi_id)
+      tx.executeSql(
+        'INSERT INTO table_Data (TableData_id, Expe_id, TableDivi_id, Data) VALUES (?,?,?,?)',
+        [Divi_id, indice, aceleromedata],
+        (tx, results) => {
+          console.log('Results', results.rowsAffected);
+          if (results.rowsAffected > 0) {
+            console.log("evento registrado")
+          } else alert('Registration Failed');
+        }
+      );
+    });
+  }
+};
 
 export const addDivice = async (Divice) => {
-  //debugger
-  let indice
-  getindice(value => {
+  getindiceExp(value => {
     console.log(value)
-    indice=value[0]
+    indice = value[0]
   })
   db.transaction(function (tx) {
     tx.executeSql(
@@ -115,23 +138,7 @@ export const addDivice = async (Divice) => {
   });
 };
 
-export const adddata = async () => {
-  //debugger
-  db.transaction(function (tx) {
-    tx.executeSql(
-      'INSERT INTO table_user (user_name, user_contact, user_address) VALUES (?,?,?)',
-      ["userName", "userContact", "userAddress"],
-      (tx, results) => {
-        console.log('Results', results.rowsAffected);
-        if (results.rowsAffected > 0) {
-          console.log("evento registrado")
-        } else alert('Registration Failed');
-      }
-    );
-  });
-};
-
-const getindice = (callback) => {
+const getindiceExp = (callback) => {
   db.transaction((tx) => {
     query = "SELECT MAX(Expe_id) as id FROM table_Experimento";
     tx.executeSql(query,
@@ -140,12 +147,29 @@ const getindice = (callback) => {
         var resultItemIdArr = new Array();
         for (let i = 0; i < results.rows.length; i++) {
           resultItemIdArr.push(results.rows.item(i).id);
-          console.log(results.rows.item(i).id);
+          //console.log(results.rows.item(i).id);
         }
         callback(resultItemIdArr);
       });
   });
 };
+
+const getIdDivice = (callback, indice, key) => {
+  db.transaction((tx) => {
+    query = "SELECT TableDivi_id as id FROM table_Divice where Macaddres=? AND Expe_id =?";
+    tx.executeSql(query,
+      [key, indice], (tx, results) => {
+        console.log("\n\nQuery completed\n");
+        var resultItemIdArr = new Array();
+        for (let i = 0; i < results.rows.length; i++) {
+          resultItemIdArr.push(results.rows.item(i).id);
+          // console.log(results.rows.item(i).id);
+        }
+        callback(resultItemIdArr);
+      });
+  });
+};
+
 
 export const getdata = async () => {
   db.transaction(function (tx) {
