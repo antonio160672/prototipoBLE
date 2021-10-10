@@ -5,6 +5,7 @@ import Form from '../Form/form';
 import Constantes from './constantes'
 import Toast from 'react-native-simple-toast';
 import DispositivosBLE from '../DispositivosBLE/DispositivosBLE'
+import TableExpe from '../TableExperiment/Table'
 import {
     createTableExperimento,
     createTableDivice,
@@ -15,22 +16,22 @@ import {
 
 function BluetoothList(props) {
     const [expeName, setExperiment] = useState('')
-    const [errors, setExErrors] = useState(false)
+    const [errors, setExErrors] = useState(true)
 
     const createtable = async () => {
         createTableExperimento()
         createTableDivice()
         createTableData()
-        adddataExperimento("Experimento de camita")
     }
 
     useEffect(() => {
         createtable();
-    }, [errors]);
+    }, []);
 
     const clickButton = () => {
         console.log(expeName)
         if (expeName.length > 0) {
+            adddataExperimento(expeName)
             Toast.show('Experimento guardado');
             setExErrors(false)
         } else {
@@ -45,7 +46,9 @@ function BluetoothList(props) {
                     onPress={clickButton}
                     onChangeText={(text) => setExperiment(text)}
                 />
-
+            )}
+             {errors && (
+                <TableExpe />
             )}
             {/*-Agregar un nuevo boton para recuperar todos los
                los experimentos, mostar en una tabla 

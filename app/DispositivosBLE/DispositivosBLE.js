@@ -32,7 +32,7 @@ import {
 } from '../services/db-service';
 
 let _ = require('underscore')
-let arraF;
+let global=false;
 let deviceObje = new Object();
 const BleManagerModule = NativeModules.BleManager;
 const bleManagerEmitter = new NativeEventEmitter(BleManagerModule);
@@ -111,23 +111,25 @@ function DispositivosBLE(props) {
         })
     }, []);
 
-    useEffect(() => {
+    useEffect(async () => {
         let interval;
-        for (let prop in  deviceObje) {
-            deviceObje[prop]=[]
+        for (let prop in deviceObje) {
+            deviceObje[prop] = []
         }
+        console.log(deviceObje);
+
         if (realTime) {
             interval = setInterval(() => {
                 insertInfo()
-                for (let prop in  deviceObje) {
+                for (let prop in deviceObje) {
                     //console.log("hola mundo desde la prop")
-                    deviceObje[prop]=[]
+                    deviceObje[prop] = []
                 }
             }, 30000);
         } else {
             clearInterval(interval);
-            //setArrayAcele([]);
-            setList([])
+            setArrayAcele([]);
+            //setList([])
         }
         return () => clearInterval(interval);
     }, [realTime]);
@@ -139,8 +141,7 @@ function DispositivosBLE(props) {
     // }, [JSON.stringify(arrayAcele)]);
 
 
-    const insertInfo = () => {
-        //debugger
+    const insertInfo = async () => {
         adddata(deviceObje)
     }
 
@@ -178,6 +179,8 @@ function DispositivosBLE(props) {
 
     const handleDisconnectedPeripheral = (data) => {
         console.log('1')
+        debugger
+        deviceObje
         let peripheral = peripherals.get(data.peripheral);
         if (peripheral) {
             peripheral.connected = false;
@@ -200,6 +203,7 @@ function DispositivosBLE(props) {
                 result.connected = true;
                 peripherals.set(result.id, result);
                 setRealTime(true)
+                global=true//cambiar
                 setList(Array.from(peripherals.values()));
             })
         }).catch((error) => {
@@ -208,15 +212,18 @@ function DispositivosBLE(props) {
     }
 
     const handleUpdateValueForCharacteristic = async ({ value, peripheral, characteristic, service }) => {
-        const buffer = Buffer.from(value);
-        var date = moment()
-            .format('YYYY-MM-DD hh:mm:ss a');
+        if (global) {
+            const buffer = Buffer.from(value);
+            var date = moment()
+                .format('YYYY-MM-DD hh:mm:ss a');
 
-        const dataacelero = buffer.toString() + "," + date + "," +  peripheral+ ";";
-        //console.log(dataacelero)
-        deviceObje[peripheral].push(dataacelero)
+            const dataacelero = buffer.toString() + "," + date + "," + peripheral + ";";
+            console.log("tiempo real:", realTime)
+            deviceObje[peripheral].push(dataacelero)
+        }
+
     }
-    
+
     const testPeripheral = async (peripheral) => {
         if (peripheral) {
             if (peripheral.connected) {
