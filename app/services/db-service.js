@@ -2,20 +2,17 @@ import { enablePromise, openDatabase, SQLiteDatabase } from 'react-native-sqlite
 import { ToDoItem } from '../models';
 
 let indice;
-
-// enablePromise(true);
+ 
 var db = openDatabase({
   name: 'SchoolDatabase.db',
   location: 'default'
 },
   () => {
-    console.log("algo")
   }, (error) => {
     console.error(error);
   });
 
-export const createTableExperimento = async () => {
-  //debugger
+export const createTableExperimento = async () => { 
   db.transaction(function (txn) {
     txn.executeSql(
       "SELECT name FROM sqlite_master WHERE type='table' AND name='table_Experimento'",
@@ -29,15 +26,14 @@ export const createTableExperimento = async () => {
             []
           );
 
-          console.log('SQLite Database and table_Experimento Successfully Created..1');
+          console.log('createTableExperimento Successfully Created');
         }
       }
     );
   })
 };
 
-export const createTableDivice = async () => {
-  //debugger
+export const createTableDivice = async () => { 
   db.transaction(function (txn) {
     let query="CREATE TABLE IF NOT EXISTS table_Divice(TableDivi_id INTEGER primary key AUTOINCREMENT," +
     "Expe_id INTEGER, Macaddres VARCHAR(25), serviceuuid VARCHAR(255), caracteristica VARCHAR(255), "+
@@ -51,7 +47,7 @@ export const createTableDivice = async () => {
           txn.executeSql(query,
             []
           );
-          console.log('SQLite Database and table_Experimento Successfully Created..2');
+          console.log('table_Divice Successfully Created');
         }
       }
     );
@@ -59,7 +55,6 @@ export const createTableDivice = async () => {
 };
 
 export const createTableData = async () => {
-  //debugger
   db.transaction(function (txn) {
     txn.executeSql(
       "SELECT name FROM sqlite_master WHERE type='table' AND name='table_Data'",
@@ -75,7 +70,7 @@ export const createTableData = async () => {
             []
           );
 
-          console.log('SQLite Database and table_Experimento Successfully Created..3');
+          console.log('table_Data Successfully Created');
         }
       }
     );
@@ -88,33 +83,27 @@ export const adddataExperimento = async (Expe_name) => {
       'INSERT INTO table_Experimento (Expe_id, Expe_name) VALUES (?,?)',
       [, Expe_name],
       (tx, results) => {
-        console.log('Results', results);
         if (results.rowsAffected > 0) {
-          console.log("evento registrado")
+          console.log("inserción en table_Experimento")
         } else alert('Registration Failed');
       }
     );
   });
 };
-export const adddata = (data) => {
-  //debugger
+export const adddata = (data) => { 
   let Divi_id;
   for (const [key, Data1] of Object.entries(data)) {
     getIdDivice(value => {
       Divi_id = value[0]
-      let aceleromedata = JSON.stringify(Object.assign({}, Data1))
-      debugger
+      let aceleromedata = JSON.stringify(Object.assign({}, Data1)) 
       console.log(aceleromedata)
-      db.transaction(function (tx) {
-        console.log(Divi_id)
-        console.log(indice)
+      db.transaction(function (tx) { 
         tx.executeSql(
           'INSERT INTO table_Data(TableData_id, Expe_id, TableDivi_id, Data) VALUES (?,?,?,?)',
           [, indice,Divi_id , aceleromedata],
-          (tx, results) => {
-            console.log('Results', results.rowsAffected);
+          (tx, results) => { 
             if (results.rowsAffected > 0) {
-              console.log("evento registrado")
+              console.log("addData")
             } else alert('Registration Failed');
           }
         );
@@ -125,28 +114,24 @@ export const adddata = (data) => {
 
 export const addDivice = (Divice) => {
   let Divi_id;
-  getindiceExp(value => {
-    console.log(value)
+  getindiceExp(value => { 
     indice = value[0]
-    getIdDivice(Divi_id => {
-      debugger
-      console.log(typeof(Divi_id[0])==='undefined')
+    getIdDivice(Divi_id => { 
       if ((typeof(Divi_id[0])==='undefined')){
         db.transaction(function (tx) {
           tx.executeSql(
             'INSERT INTO table_Divice (TableDivi_id, Expe_id, Macaddres, serviceuuid, caracteristica) VALUES (?,?,?,?,?)',
             [, indice, Divice.getMacaddres(), Divice.getserviceuuids(), Divice.getcaracteristica()],
-            (tx, results) => {
-              console.log('Results', results);
+            (tx, results) => { 
               if (results.rowsAffected > 0) {
-                console.log("evento registrado inset en table_Experimento")
+                console.log("evento registrado addDivice")
               } else alert('Registration Failed');
             }, function (tx, error) {
               reject(error);
             });
         });
       }else{
-        console.log("ya se registro")
+        console.log("ya se registro el dispositivo")
       }
       
     }, indice, Divice.getMacaddres())
@@ -159,12 +144,10 @@ const getindiceExp = (callback) => {
   db.transaction((tx) => {
     query = "SELECT MAX(Expe_id) as id FROM table_Experimento";
     tx.executeSql(query,
-      [], (tx, results) => {
-        //console.log("\n\nQuery completed\n");
+      [], (tx, results) => { 
         var resultItemIdArr = new Array();
         for (let i = 0; i < results.rows.length; i++) {
-          resultItemIdArr.push(results.rows.item(i).id);
-          //console.log(results.rows.item(i).id);
+          resultItemIdArr.push(results.rows.item(i).id); 
         }
         callback(resultItemIdArr);
       });
@@ -175,12 +158,10 @@ const getIdDivice = (callback, indice, key) => {
   db.transaction((tx) => {
     query = "SELECT TableDivi_id as id FROM table_Divice where Macaddres=? AND Expe_id =?";
     tx.executeSql(query,
-      [key, indice], (tx, results) => {
-        //console.log("\n\nQuery completed\n");
+      [key, indice], (tx, results) => { 
         var resultItemIdArr = new Array();
         for (let i = 0; i < results.rows.length; i++) {
-          resultItemIdArr.push(results.rows.item(i).id);
-          // console.log(results.rows.item(i).id);
+          resultItemIdArr.push(results.rows.item(i).id); 
         }
         callback(resultItemIdArr);
       });
@@ -197,15 +178,7 @@ export const getdata = async () => {
         var temp = [];
         for (let i = 0; i < results.rows.length; ++i)
           temp.push(results.rows.item(i));
-        console.log(results.rows.item(i))
-        //temp.push();
-        // setItems(temp);
-
-        // if (results.rows.length >= 1) {
-        //   setEmpty(false);
-        // } else {
-        //   setEmpty(true)
-        // }
+        console.log(results.rows.item(i)) 
       }
     );
   });
@@ -215,27 +188,23 @@ export const getExperimento = async(callback) => {
   db.transaction((tx) => {
     //query = "SELECT * FROM table_Divice";
     query = "SELECT * FROM table_Experimento";
-    tx.executeSql(query, [], (tx, results) => {
-      //console.log("\n\nQuery completed\n");
+    tx.executeSql(query, [], (tx, results) => { 
       var resultItemIdArr = new Array();
       for (let i = 0; i < results.rows.length; i++) {
-        resultItemIdArr.push(results.rows.item(i));
-        // console.log(results.rows.item(i).id);
+        resultItemIdArr.push(results.rows.item(i)); 
       }
       callback(resultItemIdArr);
     });
   });
 };
 
-export const getExperimento1 = async(callback) => {
+export const getdataExperiment = async(callback,id) => {
   db.transaction((tx) => {
     query = "SELECT * FROM table_Data where Expe_id=?";
-    tx.executeSql(query, ["3"], (tx, results) => {
-      //console.log("\n\nQuery completed\n");
+    tx.executeSql(query, [id], (tx, results) => { 
       var resultItemIdArr = new Array();
       for (let i = 0; i < results.rows.length; i++) {
-        resultItemIdArr.push(results.rows.item(i));
-        // console.log(results.rows.item(i).id);
+        resultItemIdArr.push(results.rows.item(i)); 
       }
       callback(resultItemIdArr);
     });

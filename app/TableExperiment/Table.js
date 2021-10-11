@@ -1,47 +1,23 @@
 import React, { useEffect, useState } from 'react'
-import { Text, View, StyleSheet } from 'react-native';
-import { DataTable } from 'react-native-paper';
+import { Image, View, StyleSheet, Button, Alert } from 'react-native';
+import { DataTable, IconButton } from 'react-native-paper';
 import {
-  createTableExperimento,
-  createTableDivice,
-  createTableData,
-  adddataExperimento,
   getExperimento,
-  getExperimento1
+  getdataExperiment
 } from '../services/db-service';
+import RNFetchBlob from 'react-native-fetch-blob';
 var experimentos;
 var dataExper;
-export default App = () => {
-  var accounts = [
-    {
-      accNumber: '56456454',
-      accType: 'D',
-      productCode: '1454541',
-      availBalance: '987436.46',
-    },
-    {
-      accNumber: '12424345645',
-      accType: 'D',
-      productCode: '154545641',
-      availBalance: '500397.64',
-    },
-    {
-      accNumber: '4554545664',
-      accType: 'D',
-      productCode: '44545',
-      availBalance: '2467.02',
-    },
-  ];
 
+// let iconLeft={require('C:\Users\dare2\Documents\react native\prototipoBLE\app\iconos')}
+// let iconRight={require('../iconos/ic_settings.png')}
+export default App = () => {
   const [errors, setExErrors] = useState(false)
+  const [Experimen, setExperimen] = useState([]); 
 
   const dataconsult = async () => {
     getExperimento(value1 => {
-      getExperimento1(value => {
-        experimentos = value1
-        dataExper = value
-        setExErrors(true)
-      })
+      setExperimen(value1)
     })
   }
 
@@ -54,50 +30,85 @@ export default App = () => {
     console.log("data pasada", dataExper)
   }, [errors]);
 
+  const csvdata = async (data,experimento) => { 
+    // construct csvString
+    debugger
+    const arraF = []
+    
+    for (const [key, objetos] of Object.entries(data)) {
+      let dataacele=JSON.parse(objetos.Data); 
+      for (var prop in dataacele) {  
+        var pieces = dataacele[prop].split(",");
+        pieces.push(experimento)
+        arraF.push(pieces)
+      }
+    }
+    const headerString = 'X-acele,Y-acele, Z-acele, Fecha, Dispositivo, Experimento\n';
+    const rowString = arraF.map(d => `${d[0]},${d[1]},${d[2]},${d[3]},${d[4]},${d[5]}\n`).join('');
+    const csvString = `${headerString}${rowString}`;
+
+    const pathToWrite = "/storage/emulated/0/Download/data.csv";
+    console.log('pathToWrite', pathToWrite); 
+    RNFetchBlob.fs
+        .writeFile(pathToWrite, csvString, 'utf8')
+        .then(() => {
+            console.log(`wrote file ${pathToWrite}`); 
+        })
+        .catch(error => console.error(error));
+}
+
+  const saveData = (id,experimento) => {
+    getdataExperiment(data => {
+      csvdata(data,experimento)
+    }, id)
+  }
+
   return (
-    <View style={styles.container}>
+    <View>
       <DataTable>
-        <DataTable.Header>
-          <DataTable.Title>Account</DataTable.Title>
-          <DataTable.Title>Code</DataTable.Title>
-          <DataTable.Title>
-            Balance Available
-          </DataTable.Title>
+        <DataTable.Header style={styles.databeHeader}>
+          <DataTable.Title>Experimento</DataTable.Title>
+          <DataTable.Title>Eliminar</DataTable.Title>
+          <DataTable.Title>Guardar</DataTable.Title>
         </DataTable.Header>
         {
-          accounts.map(account => {
-            return (
-              <DataTable.Row
-                key={account.accNumber} // you need a unique key per item
-                onPress={() => {
-                  // added to illustrate how you can make the row take the onPress event and do something
-                  console.log(`selected account ${account.accNumber}`)
-                }}
-              >
-                <DataTable.Cell>
-                  {account.accNumber}
-                </DataTable.Cell>
-                <DataTable.Cell style={styles.messageColumn}>
-                  {account.productCode}
-                </DataTable.Cell>
-                <DataTable.Cell numeric>
-                  {account.availBalance}
-                </DataTable.Cell>
-              </DataTable.Row>
-            )
-          })}
+          Experimen.map((l, i) => (
+            <DataTable.Row style={styles.databeBox} key={l.Expe_id} >
+              <DataTable.Cell>{l.Expe_name}</DataTable.Cell>
+              <DataTable.Cell style={styles.Cellimage}>
+                <IconButton
+                  icon={require('../iconos/delete.png')}
+                  size={20}
+                />
+              </DataTable.Cell>
+              <DataTable.Cell>
+                <IconButton
+                  icon={require('../iconos/save.png')}
+                  size={20}
+                  onPress={() => saveData(l.Expe_id,l.Expe_name)}
+                />
+              </DataTable.Cell>
+            </DataTable.Row>
+          ))
+        }
       </DataTable>
+
     </View>
   );
 }
 
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingTop: 40,
-    backgroundColor: '#ecf0f1',
-    padding: 8,
+  databeBox: {
+    margin: 7,
+    textAlign: 'center',
   },
+  iconLeft: {
+    width: 17,
+    height: 17,
+  },
+  Cellimage: {
+    marginLeft: 32,
+    alignItems: 'center',
+  }
 });
