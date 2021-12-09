@@ -211,11 +211,11 @@ export const getdataExperiment = async(callback,id) => {
   });
 };
 
-const deleteRecord = () => {
+export const deletedata= (id) => {
   db.transaction((tx) => {
     tx.executeSql(
-      'DELETE FROM Student_Table where student_id=?',
-      [S_Id],
+      'DELETE FROM table_Data where Expe_id=?',
+      [id],
       (tx, results) => {
         console.log('Results', results.rowsAffected);
         if (results.rowsAffected > 0) {

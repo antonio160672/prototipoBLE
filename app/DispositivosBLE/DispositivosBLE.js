@@ -15,7 +15,7 @@ import {
     FlatList,
     TouchableOpacity
 } from 'react-native';
-import Toast from 'react-native-simple-toast';
+
 import moment from 'moment';
 
 import Styles from './componentesDispositivosBLE'
@@ -32,6 +32,8 @@ import {
 } from '../services/db-service';
 
 let _ = require('underscore')
+
+
 let global = false;
 let deviceObje = new Object();
 let interval;
@@ -111,7 +113,7 @@ function DispositivosBLE(props) {
         })
     }, []);
 
-    useEffect(async () => { 
+    useEffect(async () => {
         for (let prop in deviceObje) {
             deviceObje[prop] = []
         }
@@ -119,7 +121,7 @@ function DispositivosBLE(props) {
         if (realTime) {
             interval = setInterval(() => {
                 insertInfo()
-                for (let prop in deviceObje) { 
+                for (let prop in deviceObje) {
                     deviceObje[prop] = []
                 }
             }, 30000);
@@ -147,7 +149,7 @@ function DispositivosBLE(props) {
         }
     }
 
-    const handleDiscoverPeripheral = (peripheral) => { 
+    const handleDiscoverPeripheral = (peripheral) => {
         if (!peripheral.name) {
             peripheral.name = 'NO NAME';
         }
@@ -194,7 +196,7 @@ function DispositivosBLE(props) {
     }
 
 
-    const retrieveConnected = async () => { 
+    const retrieveConnected = async () => {
         await BleManager.getConnectedPeripherals([]).then((results) => {
             if (results.length == 0) {
                 console.log('No connected peripherals')
@@ -211,13 +213,13 @@ function DispositivosBLE(props) {
         });
     }
 
-    const handleUpdateValueForCharacteristic = async ({ value, peripheral, characteristic, service }) => {
+    const handleUpdateValueForCharacteristic = async ({ value, peripheral, characteristic, info }) => {
         if (global) {
+            var data = peripherals.get(peripheral);
             const buffer = Buffer.from(value);
             var date = moment()
-                .format('YYYY-MM-DD hh:mm:ss a');
-
-            const dataacelero = buffer.toString() + "," + date + "," + peripheral;
+            .format('YYYY-MM-DDThh:mm:ss');
+            const dataacelero = buffer.toString() + "," + date + "," + peripheral + "," + data.name;
             deviceObje[peripheral].push(dataacelero)
         }
 
@@ -246,18 +248,18 @@ function DispositivosBLE(props) {
                             setPeripheralInfo(peripheralInfo2.set(peripheral.id, peripheralInfo))
                             var service = peripheralInfo.characteristics[3].service;
                             var bakeCharacteristic = peripheralInfo.characteristics[3].characteristic;
-                            
+
                             if (!_.has(deviceObje, peripheral.id)) {
                                 deviceObje[peripheral.id] = []
                             }
                             setTimeout(() => {
-                                BleManager.startNotification(peripheral.id, service, bakeCharacteristic).then(
+                                BleManager.startNotification(peripheral.id, service, bakeCharacteristic, peripheral.name).then(
                                     () => {
                                         dive.setIdDispositivo(peripheral.id)
                                         dive.setMacaddres(peripheral.id)
                                         dive.setserviceuuids(service)
                                         dive.setcaracteristica(bakeCharacteristic)
-                                        adddivice() 
+                                        adddivice()
                                     }).catch((error) => {
                                         console.log('Notification error', error);
                                     });
