@@ -340,10 +340,13 @@ export default App = () => {
             if (!(typeof entity[key].metadata['ubicacion'] === 'undefined')) {
               if (entity[key].metadata['ubicacion'].value === 'Pierna') {
                 entity[key].value = []
+                entity['Pierna'].value = ""
               } else if (entity[key].metadata['ubicacion'].value === 'Cintura') {
                 entity[key].value = []
+                entity['Cintura'].value = ""
               } else if (entity[key].metadata['ubicacion'].value === 'Mano') {
                 entity[key].value = []
+                entity['Mano'].value = ""
               }
             }
           }
@@ -355,7 +358,7 @@ export default App = () => {
       const rowString = arraF.map(d => `${d[0]},${d[1]},${d[2]},${d[3]},${d[4]},${d[5]},${d[6]}\n`).join('');
       const csvString = `${headerString}${rowString}`;
 
-      const pathToWrite = "/storage/emulated/0/Documents/data.csv";
+      const pathToWrite = "/storage/emulated/0/Documents/"+experimento+".csv";
       console.log('pathToWrite', pathToWrite);
       RNFetchBlob.fs
         .writeFile(pathToWrite, csvString, 'utf8')
