@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import NGSI from 'ngsi-parser'
-export const sendDataFiware = (data,URLTRU,experimento,entity) => {
+export const sendDataFiware = async (data,URLTRU,experimento,entity) => {
   var opcion = false
   var arraF = []
   for (const [key, objetos] of Object.entries(data)) {
@@ -40,10 +40,9 @@ export const sendDataFiware = (data,URLTRU,experimento,entity) => {
     });
     entity['Fecha_inicio'].value = arraAxiliar[0][3]
     entity['Fecha_fin'].value = arraAxiliar[tamano - 1][3]
-
     console.log(JSON.stringify(entity))
     if (!opcion) {
-      fetch(URLTRU, {
+      await fetch(URLTRU, {
         method: "POST",
         headers: {
           'Accept': 'application/json',
@@ -51,13 +50,14 @@ export const sendDataFiware = (data,URLTRU,experimento,entity) => {
         },
         body: JSON.stringify(entity)
       }).then(response => {
+        console.log(JSON.stringify(entity))
         console.log(response)
         opcion = true;
         URLTRU = URLTRU + experimento + "/attrs"
       }).catch(err => console.log("api Erorr: ", err.response))
     }
     if (opcion) {
-      fetch(URLTRU, {
+      await fetch(URLTRU, {
         method: "PATCH",
         headers: {
           'Accept': 'application/json',
@@ -65,6 +65,7 @@ export const sendDataFiware = (data,URLTRU,experimento,entity) => {
         },
         body: JSON.stringify(entity)
       }).then(response => {
+        console.log(JSON.stringify(entity))
         console.log(response)
         console.log("\n")
       }).catch(err => console.log("api Erorr: ", err.response))

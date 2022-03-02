@@ -49,7 +49,11 @@ export default App = () => {
 
     var URLTRU = Url
     var entity = entidadFiware(experimento)
-    var arraF = sendDataFiware(data, URLTRU, experimento, entity)
+    debugger
+    console.log(entity)
+    var arraF = await sendDataFiware(data, URLTRU, experimento, entity)
+    debugger
+    console.log(arraF)
 
     //se queda esta parte pero modular la parte de arriba
     const headerString = 'X-acele,Y-acele, Z-acele, Fecha, Dispositivo, ubicacion, Experimento\n';
