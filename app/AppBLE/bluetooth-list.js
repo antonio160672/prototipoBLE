@@ -45,6 +45,7 @@ function BluetoothList(props) {
                 <Form
                     onPress={clickButton}
                     onChangeText={(text) => setExperiment(text)}
+                    
                 />
             )}
              {errors && (
@@ -56,6 +57,7 @@ function BluetoothList(props) {
             {!errors && (
                 <DispositivosBLE
                     expeName={expeName}
+                    setExErrors={setExErrors}
                 />
             )}
             {/* -Desplegar un ventana flotante (modal) de confirmacion 

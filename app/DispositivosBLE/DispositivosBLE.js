@@ -193,6 +193,9 @@ function DispositivosBLE(props) {
             setRealTime(false)
             console.log('Disconnected from ' + key);
         }
+        props.setExErrors(true)
+        console.log("holamundo")
+        
     }
 
 

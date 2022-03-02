@@ -14,7 +14,6 @@ function Divice(props) {
             props.connected === "undefined" ? 'red' : '#fff';
 
     const testPeripheral = () => {
-        debugger
         console.log('hola mundo')
         console.log(props)
     }
