@@ -43,9 +43,11 @@ export default App = () => {
     deletedata(id)
   }
 
-  const savedatacsvFiware = async (data, experimento) => {
-    //var Url="http://187.188.90.137:1026/v2/entities/"
-    var Url = "http://192.168.1.95:1026/v2/entities/"
+  const savedatacsvFiware = async (data, Nameexperimento) => {
+    debugger
+    const experimento=Nameexperimento.trim()
+    var Url="http://187.188.90.137:1026/v2/entities/"
+    //var Url = "http://192.168.1.95:1026/v2/entities/"
 
     var URLTRU = Url
     var entity = entidadFiware(experimento)
